@@ -1,10 +1,19 @@
 # CROP
 
-Expanded: Cloudformation'd Repeatable Operator Packages
+Expanded name: Cloudformation'd Repeatable Operator Packages
 
 1. Signed, verifiable versions & artifacts
 1. Easy deployment from a master function that will run stack updates to
-   templates it controls
+   templates/projects it manages
+
+## What?
+
+CROP is a tool to make it easy to ship around the bundles of code,
+configuration, and metadata that make up many applications deployed to AWS.
+These bundles often have a CloudFormation template as their base, but include
+deploy zips for Lambda functions, Elastic Beanstalk, or other targets. CROP
+puts them together in one artifact, and make it easy to move them across
+accounts or build-run boundaries in your organization.
 
 ## Use Case Sample
 
