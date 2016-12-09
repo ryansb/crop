@@ -15,6 +15,13 @@ deploy zips for Lambda functions, Elastic Beanstalk, or other targets. CROP
 puts them together in one artifact, and make it easy to move them across
 accounts or build-run boundaries in your organization.
 
+While it can be used for standard applications, CROP is targeted at
+Lambda-based projects that center on management of AWS resources. These kinds
+of apps tend to be reusable across AWS deployments and have more permissions
+than a typical consumer-facing applications. Because of that, CROP uses
+public-key signatures to make sure that what your build system created is
+exactly what you're deploying.
+
 ## Use Case Sample
 
 Take for example the [yesterdaytabase][yesterdaytabase] project. The basic idea
@@ -35,6 +42,12 @@ So there has to be:
 - Signatures so they have faith they're getting the right software
 - Idempotent, rollback-friendly updates (CloudFormation covers this)
 - A schedule for "phoning home" to check for updates
+
+## Deployment Model
+
+CROP is itself a serverless application that runs in the target account, and
+has a master Lambda function that handles all installed CROP packages for the
+account.
 
 ## Package Contents
 
