@@ -4,4 +4,6 @@
 
 from . import commands
 from . import logging
-from config import configure
+from . import config
+
+configure = config.configure

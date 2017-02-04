@@ -8,6 +8,7 @@ import sys
 from structlog import wrap_logger
 from structlog.processors import JSONRenderer
 from structlog.stdlib import filter_by_level
+from structlog.processors import format_exc_info, TimeStamper
 
 logging.basicConfig(
     level=logging.WARN,
@@ -15,15 +16,12 @@ logging.basicConfig(
     format='%(message)s',
 )
 
-def add_timestamp(_, __, event):
-    event['timestamp'] = datetime.datetime.utcnow().isoformat()
-    return event
-
 log = wrap_logger(
     logging.getLogger('crop'),
     processors=[
         filter_by_level,
-        add_timestamp,
+        TimeStamper(fmt="ISO", utc=False),
+        format_exc_info,
         JSONRenderer(indent=2, sort_keys=True)
     ]
 )
