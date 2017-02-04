@@ -1,0 +1,38 @@
+#!/bin/env python3
+# -*- coding: utf-8 -*-
+# Author: Ryan Scott Brown <sb@ryansb.com>
+# License: Apache v2.0
+"""
+Usage: crop [--debug] [--config=<FILE>] ping
+       crop [--debug] [-c <FILE>] product
+
+Create and update Service Catalog products based on Serverless Framework projects.
+
+Arguments:
+
+Options:
+  -c FILE --config=FILE    path (absolute or relative) to config file [default: ./crop.yml]
+  --debug                  turn on debug-level logging (this is really verbose)
+"""
+
+import json, sys
+from docopt import docopt
+
+import crop
+from crop.logging import log
+
+
+if __name__ == '__main__':
+    arguments = docopt(__doc__)
+    if arguments['--debug']:
+        import logging
+        logging.getLogger().setLevel(logging.DEBUG)
+    log.debug('cli.invoke', executable=__file__, options=arguments)
+    config = crop.configure(arguments['--config'])
+    if config is None:
+        print(json.dumps(
+            {'error': 'Config {} must exist & be readable'.format(arguments["--config"])}
+        ))
+        sys.exit(1)
+
+    print(json.dumps({'ping': True}))
