@@ -3,3 +3,4 @@ docopt
 structlog
 voluptuous
 six
+PyYAML
