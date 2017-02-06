@@ -12,6 +12,15 @@ from crop.logging import log
 
 
 def upload_project(serverless_dir, asset_bucket, asset_s3_prefix):
+    """Upload project zipfiles and template to S3
+
+    This function also transforms the Serverless template to remove custom
+    bucket and replace with newly uploaded asset paths. The returned tuple is
+    the S3 key in the asset bucket for the template, and the S3 object version
+    (or None if versioning is disabled).
+
+    TODO: Handle custom artifacts from serverless.yml `package` directives
+    """
     zip_assets = asset_map(serverless_dir, asset_s3_prefix)
     versioned_assets = upload_zipfiles(serverless_dir, asset_bucket, zip_assets)
 
@@ -35,7 +44,7 @@ def upload_zipfiles(serverless_dir, asset_bucket, asset_key_map):
     new_map = {}
 
     for fname, key in asset_key_map.items():
-        log.debug('file.upload.start', name=fname, key=key, bucket=asset_bucket)
+        log.debug('file.upload.start', path=os.path.join(serverless_dir, fname), key=key, bucket=asset_bucket)
         with open(os.path.join(serverless_dir, fname), 'rb') as f:
             result = s3.put_object(
                 ACL='public-read',
@@ -48,7 +57,7 @@ def upload_zipfiles(serverless_dir, asset_bucket, asset_key_map):
                 new_map[fname] = key, result['VersionId']
             else:
                 new_map[fname] = key
-        log.debug('file.upload.success', name=fname, key=key, bucket=asset_bucket)
+        log.debug('file.upload.success', name=fname, key=key, bucket=asset_bucket, version=result.get('VersionId', ''))
     log.info('assets.upload.success', map=new_map, bucket=asset_bucket)
     return new_map
 
