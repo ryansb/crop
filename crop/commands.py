@@ -15,17 +15,18 @@ def product(config, arguments):
 def update_product(config, arguments):
     log = logging.log.bind(method='update_product')
 
-    product = utils.get_product(
+    product_info = utils.get_product(
         name=config['product'].get('name'),
         product_id=config['product'].get('id'),
     )
+    product_id = product_info['ProductId']
 
     project_dir = config.get(
         'project_path',
         dirname(abspath(arguments['--config']))
     )
     serverless_dir = join(project_dir, '.serverless')
-    asset_s3_prefix = "{}/assets/".format(product['ProductId'])
+    asset_s3_prefix = "{}/assets/".format(product_id)
 
     log.bind(
         serverless_dir=serverless_dir,
