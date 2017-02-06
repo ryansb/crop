@@ -71,7 +71,7 @@ def upload_template(template, asset_bucket, prefix):
         Bucket=asset_bucket,
         Key=prefix + 'template.json',
         ContentType='application/json',
-        Body=json.dumps(template, indent=2)
+        Body=json.dumps(template, sort_keys=True)
     )
     log.debug('template.upload.success', key=prefix + 'template.json', bucket=asset_bucket, version=result.get('VersionId', ''))
     return prefix + 'template.json', result.get('VersionId')
