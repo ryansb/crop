@@ -2,6 +2,7 @@
 # Author: Ryan Scott Brown <sb@ryansb.com>
 # License: Apache v2.0
 
+import os
 import random
 import string
 
@@ -10,7 +11,7 @@ import boto3
 from crop.logging import log
 
 def get_product(name=None, product_id=None):
-    service = boto3.client('servicecatalog')
+    service = boto3_client('servicecatalog')
     if name:
         product = next(
             p for p in
@@ -22,7 +23,7 @@ def get_product(name=None, product_id=None):
     return service.describe_product(Id=product_id)['ProductViewSummary']
 
 def build_template_url(asset_bucket, template_key, version_id=None):
-    s3 = boto3.client('s3')
+    s3 = boto3_client('s3')
     # get S3 regional bucket URL and build URL for template
     template_url = '{}/{}/{}'.format(s3.meta.endpoint_url, asset_bucket, template_key)
     if version_id is not None:
@@ -31,7 +32,7 @@ def build_template_url(asset_bucket, template_key, version_id=None):
 
 
 def update_product_artifact(product_id, version, template_url):
-    service = boto3.client('servicecatalog')
+    service = boto3_client('servicecatalog')
 
     token = generate_idempotency_token()
 
@@ -53,3 +54,12 @@ def update_product_artifact(product_id, version, template_url):
 
 def generate_idempotency_token():
     return ''.join(random.sample(string.ascii_letters*16, 16))
+
+def boto3_client(service, **kwargs):
+    return boto3.Session(
+        profile_name=os.getenv('AWS_PROFILE')
+    ).client(
+        service,
+        region_name=os.getenv('AWS_REGION'),
+        **kwargs,
+    )

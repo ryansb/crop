@@ -8,7 +8,8 @@ import json
 from io import StringIO
 
 import boto3
-from crop.logging import log
+from .logging import log
+from . import utils
 
 
 def upload_project(serverless_dir, asset_bucket, asset_s3_prefix):
@@ -39,7 +40,7 @@ def upload_zipfiles(serverless_dir, asset_bucket, asset_key_map):
     """Takes an asset key map and will return a new one with uploaded files. If
     the bucket has object versioning, the asset map returned will have versions
     in addition to keys"""
-    s3 = boto3.client('s3')
+    s3 = utils.boto3_client('s3')
 
     new_map = {}
 
@@ -63,7 +64,7 @@ def upload_zipfiles(serverless_dir, asset_bucket, asset_key_map):
 
 def upload_template(template, asset_bucket, prefix):
     from io import StringIO
-    s3 = boto3.client('s3')
+    s3 = utils.boto3_client('s3')
 
     log.debug('template.upload.start', key=prefix + 'template.json', bucket=asset_bucket)
     result = s3.put_object(
