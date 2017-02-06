@@ -4,7 +4,8 @@
 # License: Apache v2.0
 """
 Usage: crop [--debug] [--config=<FILE>] product
-       crop [-c <FILE>] product
+       crop [-c <FILE>] product [--update]
+       crop [--debug] product [--update]
 
 Create and update Service Catalog products based on Serverless Framework projects.
 
@@ -13,9 +14,10 @@ Arguments:
 Options:
   -c FILE --config=FILE    path (absolute or relative) to config file [default: ./crop.yml]
   --debug                  turn on debug-level logging (this is really verbose)
+  --update                 update an existing product with new serverless templates & zipfiles
 """
 
-import json, sys
+import json, sys, six
 from docopt import docopt
 
 import crop
@@ -27,12 +29,18 @@ if __name__ == '__main__':
     if arguments['--debug']:
         import logging
         logging.getLogger().setLevel(logging.DEBUG)
+        for logger in ('boto3', 'botocore', 'requests'):
+            # Skip logging for dependencies
+            logging.getLogger(logger).setLevel(logging.WARNING)
+
     log.debug('cli.invoke', executable=__file__, options=arguments)
+
     config = crop.configure(arguments['--config'])
-    if config is None:
-        print(json.dumps(
-            {'error': 'Config {} must exist & be readable'.format(arguments["--config"])}
-        ))
+    if isinstance(config, six.text_type):
+        print(json.dumps({'error': config}))
         sys.exit(1)
 
-    print(json.dumps({'ping': True}))
+    if arguments.get('product', False):
+        print(json.dumps(crop.commands.product(config, arguments)))
+    else:
+        print(json.dumps({}))
