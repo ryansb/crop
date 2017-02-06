@@ -21,7 +21,9 @@ def upload_project(serverless_dir, asset_bucket, asset_s3_prefix):
             asset_bucket,
             versioned_assets,
         )
-    upload_template(out_template, asset_bucket, asset_s3_prefix)
+    log.debug('template.rewritten', template=out_template)
+    template_s3_key, version = upload_template(out_template, asset_bucket, asset_s3_prefix)
+    return template_s3_key, version
 
 
 def upload_zipfiles(serverless_dir, asset_bucket, asset_key_map):

@@ -34,10 +34,19 @@ def update_product(config, arguments):
         prefix=asset_s3_prefix,
     )
 
-    munge.upload_project(
+    template_key, template_version = munge.upload_project(
         serverless_dir,
         config['catalog']['bucket'],
         asset_s3_prefix,
     )
 
+    utils.update_product_artifact(
+        product_id,
+        '2',
+        utils.build_template_url(
+            config['catalog']['bucket'],
+            template_key,
+            template_version
+        )
+    )
     log.info('update_product.success')
