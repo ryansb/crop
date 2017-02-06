@@ -66,15 +66,15 @@ def upload_template(template, asset_bucket, prefix):
     s3 = boto3.client('s3')
 
     log.debug('template.upload.start', key=prefix + 'template.json', bucket=asset_bucket)
-    resurlt = s3.put_object(
+    result = s3.put_object(
         ACL='public-read',
         Bucket=asset_bucket,
         Key=prefix + 'template.json',
         ContentType='application/json',
         Body=json.dumps(template, indent=2)
     )
-    log.debug('template.upload.success', key=prefix + 'template.json', bucket=asset_bucket)
-    return asset_bucket, prefix + 'template.json'
+    log.debug('template.upload.success', key=prefix + 'template.json', bucket=asset_bucket, version=result.get('VersionId', ''))
+    return prefix + 'template.json', result.get('VersionId')
 
 def cloudformation_template(template, asset_bucket, asset_key_map):
     """This function takes a (text) template output by the Serverless framework
