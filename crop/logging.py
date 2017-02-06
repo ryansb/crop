@@ -22,6 +22,7 @@ log = wrap_logger(
         filter_by_level,
         TimeStamper(fmt="ISO", utc=False),
         format_exc_info,
-        JSONRenderer(indent=2, sort_keys=True)
+        JSONRenderer(sort_keys=True)
+        #JSONRenderer(indent=2, sort_keys=True)
     ]
 )
