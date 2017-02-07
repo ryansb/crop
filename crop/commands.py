@@ -26,18 +26,17 @@ def update_product(config, arguments):
         dirname(abspath(arguments['--config']))
     )
     serverless_dir = join(project_dir, '.serverless')
-    asset_s3_prefix = "{}/assets/".format(product_id)
 
     log.bind(
         serverless_dir=serverless_dir,
         bucket=config['catalog']['bucket'],
-        prefix=asset_s3_prefix,
     )
 
     template_key, template_version = munge.upload_project(
         serverless_dir,
         config['catalog']['bucket'],
-        asset_s3_prefix,
+        product_id,
+        arguments['--version'],
     )
 
     artifact_id = utils.update_product_artifact(
@@ -46,7 +45,6 @@ def update_product(config, arguments):
         utils.build_template_url(
             config['catalog']['bucket'],
             template_key,
-            template_version
         ),
         description=arguments['--description']
     )

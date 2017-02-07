@@ -12,7 +12,7 @@ from .logging import log
 from . import utils
 
 
-def upload_project(serverless_dir, asset_bucket, asset_s3_prefix):
+def upload_project(serverless_dir, asset_bucket, product_id, project_version):
     """Upload project zipfiles and template to S3
 
     This function also transforms the Serverless template to remove custom
@@ -22,7 +22,10 @@ def upload_project(serverless_dir, asset_bucket, asset_s3_prefix):
 
     TODO: Handle custom artifacts from serverless.yml `package` directives
     """
-    zip_assets = asset_map(serverless_dir, asset_s3_prefix)
+
+    zipfile_s3_prefix, template_s3_prefix = "assets/{}/".format(product_id), "templates/{}/".format(product_id)
+
+    zip_assets = asset_map(serverless_dir, zipfile_s3_prefix)
     versioned_assets = upload_zipfiles(serverless_dir, asset_bucket, zip_assets)
 
     with open(os.path.join(serverless_dir, 'cloudformation-template-update-stack.json')) as source_template:
@@ -32,7 +35,7 @@ def upload_project(serverless_dir, asset_bucket, asset_s3_prefix):
             versioned_assets,
         )
     log.debug('template.rewritten', template=out_template)
-    template_s3_key, version = upload_template(out_template, asset_bucket, asset_s3_prefix)
+    template_s3_key, version = upload_template(out_template, asset_bucket, template_s3_prefix, project_version)
     return template_s3_key, version
 
 
@@ -62,20 +65,25 @@ def upload_zipfiles(serverless_dir, asset_bucket, asset_key_map):
     log.info('assets.upload.success', map=new_map, bucket=asset_bucket)
     return new_map
 
-def upload_template(template, asset_bucket, prefix):
+def upload_template(template, asset_bucket, prefix, project_version):
     from io import StringIO
     s3 = utils.boto3_client('s3')
 
-    log.debug('template.upload.start', key=prefix + 'template.json', bucket=asset_bucket)
+    template_key = '{}template-{}.json'.format(prefix, project_version)
+    log.debug('template.upload.start',
+        key=template_key,
+        bucket=asset_bucket
+    )
+
     result = s3.put_object(
         ACL='public-read',
         Bucket=asset_bucket,
-        Key=prefix + 'template.json',
+        Key=template_key,
         ContentType='application/json',
         Body=json.dumps(template, sort_keys=True)
     )
-    log.debug('template.upload.success', key=prefix + 'template.json', bucket=asset_bucket, version=result.get('VersionId', ''))
-    return prefix + 'template.json', result.get('VersionId')
+    log.debug('template.upload.success', key=template_key, bucket=asset_bucket, version=result.get('VersionId', ''))
+    return template_key, result.get('VersionId')
 
 def cloudformation_template(template, asset_bucket, asset_key_map):
     """This function takes a (text) template output by the Serverless framework
