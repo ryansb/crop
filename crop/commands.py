@@ -48,4 +48,14 @@ def update_product(config, arguments):
         ),
         description=arguments['--description']
     )
-    log.info('update_product.success')
+    log.info('update_product.success', artifact=artifact_id,
+        template=template_key, bucket=config['catalog']['bucket'])
+    return {
+        'command': 'update-product',
+        'artifact': artifact_id,
+        'template_url': utils.build_template_url(
+            config['catalog']['bucket'],
+            template_key,
+        ),
+        'bucket': config['catalog']['bucket'],
+    }
