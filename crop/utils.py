@@ -24,12 +24,12 @@ def get_product(name=None, product_id=None):
     return service.describe_product(Id=product_id)['ProductViewSummary']
 
 
-def build_template_url(asset_bucket, template_key, version_id=None):
+def build_template_url(asset_bucket, template_key, object_version_id=None):
     s3 = boto3_client('s3')
     # get S3 regional bucket URL and build URL for template
     template_url = '{}/{}/{}'.format(s3.meta.endpoint_url, asset_bucket, template_key)
-    if version_id is not None:
-        template_url += '?versionId={}'.format(version_id)
+    if object_version_id is not None:
+        template_url += '?versionId={}'.format(object_version_id)
     return template_url
 
 
