@@ -33,7 +33,7 @@ def build_template_url(asset_bucket, template_key, version_id=None):
     return template_url
 
 
-def update_product_artifact(product_id, version, template_url, description=None):
+def update_product_artifact(product_id, version, template_url, description):
     service = boto3_client('servicecatalog')
 
     token = generate_idempotency_token()
@@ -44,7 +44,7 @@ def update_product_artifact(product_id, version, template_url, description=None)
         ProductId=product_id,
         Parameters={
             'Name': version,
-            'Description': description or 'Deploy artifact by CROP',
+            'Description': description,
             'Info': {
                 'LoadTemplateFromURL': template_url,
             },

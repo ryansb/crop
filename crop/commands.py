@@ -42,11 +42,12 @@ def update_product(config, arguments):
 
     artifact_id = utils.update_product_artifact(
         product_id,
-        '2',
+        arguments['--version'],
         utils.build_template_url(
             config['catalog']['bucket'],
             template_key,
             template_version
-        )
+        ),
+        description=arguments['--description']
     )
     log.info('update_product.success')

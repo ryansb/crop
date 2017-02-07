@@ -4,8 +4,10 @@
 # License: Apache v2.0
 """
 Usage: crop [--debug] [--config=<FILE>] product
-       crop [-c <FILE>] product [--update]
-       crop [--debug] product [--update]
+       crop [-c <FILE>] update-product
+       crop [--debug] update-product [--version <VERSION>]
+       crop [--debug] update-product [--version <VERSION>] [--description <DESC>]
+       crop [--config=<FILE>] update-product [--description <DESC>]
 
 Create and update Service Catalog products based on Serverless Framework projects.
 
@@ -14,7 +16,8 @@ Arguments:
 Options:
   -c FILE --config=FILE    path (absolute or relative) to config file [default: ./crop.yml]
   --debug                  turn on debug-level logging (this is really verbose)
-  --update                 update an existing product with new serverless templates & zipfiles
+  --description=DESC       provide a description to be attached to the artifact [default: Deployed by CROP]
+  --version=VERSION        specify the name of the version that will be uploaded [default: 2]
 """
 
 import json, sys, six
@@ -40,7 +43,7 @@ if __name__ == '__main__':
         print(json.dumps({'error': config}))
         sys.exit(1)
 
-    if arguments.get('product', False):
-        print(json.dumps(crop.commands.product(config, arguments)))
+    if arguments.get('update-product', False):
+        print(json.dumps(crop.commands.update_product(config, arguments)))
     else:
         print(json.dumps({}))
