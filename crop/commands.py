@@ -40,7 +40,7 @@ def update_product(config, arguments):
         asset_s3_prefix,
     )
 
-    utils.update_product_artifact(
+    artifact_id = utils.update_product_artifact(
         product_id,
         '2',
         utils.build_template_url(
