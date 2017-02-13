@@ -14,9 +14,9 @@ from . import logging
 
 schema = Schema({
     Optional('project_path'): IsDir(),
+    Required('bucket'): str,
     Required('catalog'): {
         Required('id'): Match(r'^port-[A-Za-z0-9]+$'),
-        Required('bucket'): str
     },
     Required('product'): {
         Optional('id'): Match(r'^prod-[A-Za-z0-9]+$'),
