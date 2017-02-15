@@ -55,6 +55,9 @@ schema = Schema({
     Optional('product'): {
         Required('id'): Match(r'^prod-[A-Za-z0-9]+$'),
     },
+    Optional('upload'): {
+        Optional('prefix', default=''): str
+    }
 })
 
 def configure(config_path):
