@@ -29,12 +29,12 @@ def update_product(config, arguments):
 
     log.bind(
         serverless_dir=serverless_dir,
-        bucket=config['catalog']['bucket'],
+        bucket=config['bucket'],
     )
 
     template_key, template_version = munge.upload_project(
         serverless_dir,
-        config['catalog']['bucket'],
+        config['bucket'],
         product_id,
         arguments['--version'],
     )
@@ -43,18 +43,18 @@ def update_product(config, arguments):
         product_id,
         arguments['--version'],
         utils.build_template_url(
-            config['catalog']['bucket'],
+            config['bucket'],
             template_key,
         ),
         description=arguments['--description']
     )
     log.info('update_product.success', artifact=artifact_id,
-        template=template_key, bucket=config['catalog']['bucket'])
+        template=template_key, bucket=config['bucket'])
     return {
         'command': 'update-product',
         'artifact': artifact_id,
         'template_url': utils.build_template_url(
-            config['catalog']['bucket'],
+            config['bucket'],
             template_key,
         ),
         'bucket': config['catalog']['bucket'],
