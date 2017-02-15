@@ -12,15 +12,48 @@ from voluptuous.error import Invalid
 from . import logging
 
 
+"""
+The `crop.yml` configuration file consists of 5 options, only 4 of which are
+currently used.
+
+`project_path`: this is a file system path (relative or absolute) to a
+                Serverless framework project
+
+`bucket`:       this is the name of an Amazon S3 bucket where assets will be
+                stored. Ideally, it should have versioning enabled. If
+                versioning isn't enabled, only one fully usable CROP version
+                will be available at a time. This is because zip files
+                are stored in constant paths, so newer uploads
+                overwrite old ones unless bucket versioning is used.
+
+`catalog`;      this key is unused, since crop does not yet have any
+                features for interacting with catalogs.
+
+`product`:      the Service Catalog Product that crop will interact
+                with. This option only has one attribute, `id`.
+
+`upload`:       this option is expected to be used instead of `product`
+                when not using Service Catalog, but just want a way to
+                upload Serverless project artifacts without deploying
+                them. This is useful for deploy pipelines, multistep
+                deploys, and archival/audit purposes. This has only one
+                attribute, `prefix`, and it is defaulted to an empty
+                string.
+
+Example Configuration:
+project_path: foo/bar/serverlessproj
+bucket: crop-assets-here
+product:
+  id: prod-123456
+"""
 schema = Schema({
     Optional('project_path'): IsDir(),
     Required('bucket'): str,
     Optional('catalog'): {
         Optional('id'): Match(r'^port-[A-Za-z0-9]+$'),
     },
-    Required('product'): {
-        Optional('id'): Match(r'^prod-[A-Za-z0-9]+$'),
-        Optional('name'): str,
+    Optional('product'): {
+        Required('id'): Match(r'^prod-[A-Za-z0-9]+$'),
     },
 })
 
