@@ -1,0 +1,25 @@
+{
+  "name": "serverless-crop-plugin",
+  "version": "0.1.0",
+  "description": "Serverless plugin for converting Serverless projects into AWS Service Catalog items",
+  "main": "index.js",
+  "author": "Ryan Scott Brown",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryansb/crop.git"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.7.10",
+    "lodash": "^4.16.3",
+    "bluebird": "^3.4.7"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ryansb/crop/issues"
+  },
+  "homepage": "https://github.com/ryansb/crop#readme",
+  "devDependencies": {
+    "serverless": "^1.6.0"
+  }
+}
