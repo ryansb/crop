@@ -12,7 +12,8 @@ from .logging import log
 from . import utils
 
 
-def upload_project(serverless_dir, asset_bucket, product_id, project_version):
+def upload_serverless_artifacts(serverless_dir, asset_bucket,
+        zipfile_s3_prefix, template_s3_prefix, project_version):
     """Upload project zipfiles and template to S3
 
     This function also transforms the Serverless template to remove custom
@@ -22,9 +23,6 @@ def upload_project(serverless_dir, asset_bucket, product_id, project_version):
 
     TODO: Handle custom artifacts from serverless.yml `package` directives
     """
-
-    zipfile_s3_prefix, template_s3_prefix = "assets/{}/".format(product_id), "templates/{}/".format(product_id)
-
     zip_assets = asset_map(serverless_dir, zipfile_s3_prefix)
     versioned_assets = upload_zipfiles(serverless_dir, asset_bucket, zip_assets)
 

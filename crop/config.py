@@ -6,7 +6,7 @@ import os
 import yaml
 
 import boto3
-from voluptuous import Schema, Required, Optional, Match, IsDir
+from voluptuous import Schema, Required, Optional, Match
 from voluptuous.error import Invalid
 
 from . import logging
@@ -47,7 +47,7 @@ product:
   id: prod-123456
 """
 schema = Schema({
-    Optional('project_path'): IsDir(),
+    Optional('project_path'): str,
     Required('bucket'): str,
     Optional('catalog'): {
         Optional('id'): Match(r'^port-[A-Za-z0-9]+$'),

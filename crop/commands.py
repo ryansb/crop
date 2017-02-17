@@ -32,11 +32,12 @@ def update_product(config, arguments):
         bucket=config['bucket'],
     )
 
-    template_key, template_version = munge.upload_project(
-        serverless_dir,
-        config['bucket'],
-        product_id,
-        arguments['--version'],
+    template_key, template_version = munge.upload_serverless_artifacts(
+        serverless_dir=serverless_dir,
+        asset_bucket=config['bucket'],
+        zipfile_s3_prefix="assets/{}/".format(product_id),
+        template_s3_prefix="templates/{}/".format(product_id),
+        project_version=arguments['--version'],
     )
 
     artifact_id = utils.update_product_artifact(
