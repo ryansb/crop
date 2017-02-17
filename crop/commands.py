@@ -58,5 +58,39 @@ def update_product(config, arguments):
             config['bucket'],
             template_key,
         ),
-        'bucket': config['catalog']['bucket'],
+        'bucket': config['bucket'],
+    }
+
+
+def upload_project(config, arguments):
+    log = logging.log.bind(method='upload_project')
+
+    project_dir = config.get(
+        'project_path',
+        dirname(abspath(arguments['--config']))
+    )
+
+    serverless_dir = join(project_dir, '.serverless')
+
+    log.info(
+        'project.loaded',
+        serverless_dir=serverless_dir,
+        bucket=config['bucket'],
+    )
+
+    template_key, template_version = munge.upload_serverless_artifacts(
+        serverless_dir=serverless_dir,
+        asset_bucket=config['bucket'],
+        zipfile_s3_prefix="{}/zipfiles/".format(config.get('upload', {}).get('prefix', '')),
+        template_s3_prefix="{}/templates/".format(config.get('upload', {}).get('prefix', '')),
+        project_version=arguments['--version'],
+    )
+
+    return {
+        'command': 'upload-project',
+        'template_url': utils.build_template_url(
+            config['bucket'],
+            template_key,
+        ),
+        'bucket': config['bucket'],
     }
