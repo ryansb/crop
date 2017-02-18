@@ -13,7 +13,7 @@ from . import utils
 
 
 def upload_serverless_artifacts(serverless_dir, asset_bucket,
-        zipfile_s3_prefix, template_s3_prefix, project_version):
+        zipfile_s3_prefix, template_s3_prefix, project_version, autoupdate):
     """Upload project zipfiles and template to S3
 
     This function also transforms the Serverless template to remove custom
@@ -33,8 +33,124 @@ def upload_serverless_artifacts(serverless_dir, asset_bucket,
             versioned_assets,
         )
     log.debug('template.rewritten', template=out_template)
+
+    if(autoupdate['enabled']):
+        out_template = inject_autoupdate(out_template, autoupdate['forced'])
+        log.debug('template.rewritten', template=out_template)
+
     template_s3_key, version = upload_template(out_template, asset_bucket, template_s3_prefix, project_version)
     return template_s3_key, version
+
+
+def inject_autoupdate(template, forced=False):
+    """Inject a Lambda Function (and possible CF Param) for auto updating the
+    service based on polling. You can either force this update, or allow it to be optional,
+    in which case it is set by a CF dropdown parameter when the user starts the stack from
+    the service catalog.
+    """
+
+    # role
+    template['Resources']['AutoUpdaterRole'] = {
+        'Type':'AWS::IAM::Role',
+        'Properties': {
+            # Add update policy
+            'AssumeRolePolicyDocument': {
+                'Statement': [
+                    {
+                        'Action': [
+                            'sts:AssumeRole'
+                        ],
+                        'Effect': 'Allow',
+                        'Principal': {
+                            'Service': [
+                                'lambda.amazonaws.com'
+                            ]
+                        }
+                    }
+                ],
+                'Version': '2012-10-17'
+            },
+            'Policies': [{
+                'PolicyName': 'AutoUpdateServiceCatalog',
+                'PolicyDocument': {
+                    'Statement': [{
+                            'Action': [
+                                '*'
+                            ],
+                            'Effect': 'Allow',
+                            'Resource': ['*']
+                        }],
+                    'Version': '2012-10-17'
+                }
+            }]
+        }
+    }
+
+
+    # event
+    template['Resources']['AutoUpdaterEvent'] = {
+        'Type':'AWS::Events::Rule',
+        'Properties': {
+            'ScheduleExpression': 'rate(1 minute)', # TODO: 15 minutes?
+            'State': 'ENABLED',
+            'Targets': [{
+                    'Arn': {
+                        'Fn::GetAtt': ['AutoUpdaterFunction', 'Arn']
+                    },
+                    'Id': 'autoUpdaterSchedule'
+                }]
+        }
+    }
+
+    # allow aws to invoke lambda with event
+    template['Resources']['AutoUpdateLambdaPermissionAutoUpdaterEvent'] = {
+        'Type': 'AWS::Lambda::Permission',
+        'Properties': {
+            'Action': 'lambda:InvokeFunction',
+            'FunctionName': {'Fn::GetAtt': ['AutoUpdaterFunction', 'Arn']},
+            'Principal': 'events.amazonaws.com',
+            'SourceArn': {'Fn::GetAtt': ['AutoUpdaterEvent', 'Arn']}
+        }
+    }
+
+    template['Resources']['AutoUpdaterFunction'] = {
+        'Type':'AWS::Lambda::Function',
+        'Properties': {
+            'Code': {
+                # TODO: Abstract this to other file so we still get syntax highlighting
+                # Or allow custom inject to allow custom "reporting" functionality
+                'ZipFile': 'StuffHere', #inline updater function
+            },
+            'Description': 'AutoUpdater for ServiceCatalog Function',
+            'Handler': 'index.handler',
+            'MemorySize': '256',
+            'Role': {'Fn::GetAtt': ['AutoUpdaterRole', 'Arn']},
+            'Runtime': 'python2.7',
+            'Timeout': 30
+        }
+    }
+
+    if not forced:
+        template.setdefault('Parameters', {})
+        template['Parameters']['AutoUpdates'] = {
+            'Type': 'String',
+            'Description': 'Allow the service to automatically update itself when an update is available, otherwise you must manually approve updates.',
+            'AllowedValues': ['Enabled', 'Disabled'],
+            'Default': 'Enabled'
+        }
+
+        # conditionals on roles / event / lambda
+        template.setdefault('Conditions', {})
+        template['Conditions']['AutoUpdating'] = {'Fn::Equals' : [{'Ref' : 'AutoUpdates'}, 'Enabled']}
+
+        template['Resources']['AutoUpdaterFunction']['Condition'] = 'AutoUpdating'
+        template['Resources']['AutoUpdateLambdaPermissionAutoUpdaterEvent']['Condition'] = 'AutoUpdating'
+        template['Resources']['AutoUpdaterEvent']['Condition'] = 'AutoUpdating'
+        template['Resources']['AutoUpdaterRole']['Condition'] = 'AutoUpdating'
+
+
+    log.debug('template.inject_autoupdate', template=template)
+    return template
 
 
 def upload_zipfiles(serverless_dir, asset_bucket, asset_key_map):

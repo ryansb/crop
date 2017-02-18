@@ -57,6 +57,10 @@ schema = Schema({
     },
     Optional('upload'): {
         Optional('prefix', default=''): str
+    },
+    Optional('autoupdate'): {
+        Optional('enabled', default=False): bool,
+        Optional('forced', default=False): bool
     }
 })
 
