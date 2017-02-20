@@ -6,7 +6,7 @@ import os
 import yaml
 
 import boto3
-from voluptuous import Schema, Required, Optional, Match
+from voluptuous import Schema, Required, Optional, Match, Any
 from voluptuous.error import Invalid
 
 from . import logging
@@ -58,9 +58,9 @@ schema = Schema({
     Optional('upload'): {
         Optional('prefix', default=''): str
     },
-    Optional('autoupdate'): {
-        Optional('enabled', default=False): bool,
-        Optional('forced', default=False): bool
+    Optional('autoupdate', default=None): {
+        Required('type'): Any('disable', 'enable', 'force'),
+        Optional('interval', default=15): Coerce(int)
     }
 })
 

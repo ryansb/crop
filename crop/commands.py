@@ -38,6 +38,7 @@ def update_product(config, arguments):
         zipfile_s3_prefix="assets/{}/".format(product_id),
         template_s3_prefix="templates/{}/".format(product_id),
         project_version=arguments['--version'],
+        product_id=product_id,
         autoupdate=config['autoupdate']
     )
 
