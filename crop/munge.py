@@ -37,7 +37,7 @@ def upload_serverless_artifacts(serverless_dir, asset_bucket,
     if autoupdate:
         if autoupdate['type'] == 'forced':
             out_template = inject_autoupdate(out_template, True)
-        else if autoupdate['type'] == 'enabled':
+        elif autoupdate['type'] == 'enabled':
             out_template = inject_autoupdate(out_template, False)
 
         log.debug('template.rewritten', template=out_template)
@@ -46,11 +46,16 @@ def upload_serverless_artifacts(serverless_dir, asset_bucket,
     return template_s3_key, version
 
 
-def inject_autoupdate(template, product_id, forced=False):
+def inject_autoupdate(template, product_id, force=False):
     """Inject a Lambda Function (and possible CF Param) for auto updating the
     service based on polling. You can either force this update, or allow it to be optional,
     in which case it is set by a CF dropdown parameter when the user starts the stack from
     the service catalog.
+
+    template: dict CloudFormation template
+
+    product_id: str product ID to take updates from. This will be injected into the
+                updater function environment variables.
     """
 
 
@@ -62,14 +67,10 @@ def inject_autoupdate(template, product_id, forced=False):
         ))):
         raise ValueError('Resource logical IDs conflict with keys used by CROP')
 
-    if any((x in template['Params'] for x in (
-        'AutoUpdates'
-        ))):
+    if 'AutoUpdates' in template['Params']:
         raise ValueError('Param IDs conflict with Param IDs used by CROP')
 
-    if any((x in template['Conditions'] for x in (
-        'CROPAutoUpdating'
-        ))):
+    if 'CROPAutoUpdating' in template['Conditions']:
         raise ValueError('Condition IDs conflict with Conditions IDs used by CROP')
 
     # role
@@ -96,26 +97,24 @@ def inject_autoupdate(template, product_id, forced=False):
             'Policies': [{
                 'PolicyName': 'AutoUpdateServiceCatalog',
                 'PolicyDocument': {
+                    'Version': '2012-10-17',
                     'Statement': [{
-                            'Action': [
-                                '*'
-                            ],
-                            'Effect': 'Allow',
-                            'Resource': ['*']
-                        }],
-                    'Version': '2012-10-17'
+                        'Action': ['*'],
+                        'Effect': 'Allow',
+                        'Resource': ['*']
+                    }]
                 }
             }]
         }
     }
 
-    if(autoupdate['interval'] < 1):
+    if autoupdate['interval'] < 1:
         raise ValueError('Cannot specify an interval less than 1 (minute)')
 
 
-    if(autoupdate['interval'] == 1):
+    if autoupdate['interval'] == 1:
         intervalString = '1 minute'
-    else
+    else:
         intervalString = '{} minutes'.format(autoupdate['interval'])
 
     # event
@@ -171,7 +170,7 @@ def inject_autoupdate(template, product_id, forced=False):
         }
     }
 
-    if not forced:
+    if not force:
         template.setdefault('Parameters', {})
         template['Parameters']['AutoUpdates'] = {
             'Type': 'String',
