@@ -60,11 +60,11 @@ def inject_autoupdate(template, product_id, force=False):
 
 
     if any((x in template['Resources'] for x in (
-        'CROPAutoUpdaterRole',
-        'CROPAutoUpdaterEvent',
-        'CROPAutoUpdateLambdaPermissionAutoUpdaterEvent',
-        'CROPAutoUpdaterFunction'
-        ))):
+                'CROPAutoUpdaterRole',
+                'CROPAutoUpdaterEvent',
+                'CROPAutoUpdaterEventPermission'
+                'CROPAutoUpdaterFunction'
+            ))):
         raise ValueError('Resource logical IDs conflict with keys used by CROP')
 
     if 'AutoUpdates' in template['Params']:
@@ -81,9 +81,7 @@ def inject_autoupdate(template, product_id, force=False):
             'AssumeRolePolicyDocument': {
                 'Statement': [
                     {
-                        'Action': [
-                            'sts:AssumeRole'
-                        ],
+                        'Action': ['sts:AssumeRole'],
                         'Effect': 'Allow',
                         'Principal': {
                             'Service': [
@@ -133,7 +131,7 @@ def inject_autoupdate(template, product_id, force=False):
     }
 
     # allow aws to invoke lambda with event
-    template['Resources']['CROPAutoUpdateLambdaPermissionAutoUpdaterEvent'] = {
+    template['Resources']['CROPAutoUpdaterEventPermission'] = {
         'Type': 'AWS::Lambda::Permission',
         'Properties': {
             'Action': 'lambda:InvokeFunction',
@@ -183,10 +181,13 @@ def inject_autoupdate(template, product_id, force=False):
         template.setdefault('Conditions', {})
         template['Conditions']['CROPAutoUpdating'] = {'Fn::Equals' : [{'Ref' : 'AutoUpdates'}, 'Enabled']}
 
-        template['Resources']['CROPAutoUpdaterFunction']['Condition'] = 'CROPAutoUpdating'
-        template['Resources']['CROPAutoUpdateLambdaPermissionAutoUpdaterEvent']['Condition'] = 'CROPAutoUpdating'
-        template['Resources']['CROPAutoUpdaterEvent']['Condition'] = 'CROPAutoUpdating'
-        template['Resources']['CROPAutoUpdaterRole']['Condition'] = 'CROPAutoUpdating'
+        for r in (
+                'CROPAutoUpdaterFunction',
+                'CROPAutoUpdaterEventPermission',
+                'CROPAutoUpdaterEvent',
+                'CROPAutoUpdaterRole',
+                ):
+            template['Resources'][r]['Condition'] = 'CROPAutoUpdating'
 
 
     log.debug('template.inject_autoupdate', template=template)
