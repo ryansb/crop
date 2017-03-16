@@ -6,7 +6,7 @@ import os
 import yaml
 
 import boto3
-from voluptuous import Schema, Required, Optional, Match, Any
+from voluptuous import Schema, Required, Optional, Match, Any, Coerce
 from voluptuous.error import Invalid
 
 from . import logging
